@@ -37,26 +37,29 @@ int main(int argc, char *argv[])
         distanceTransform(channels[i], distances[i], CV_DIST_L2, 3);
         normalize(distances[i], distances[i], 0, 1.0, NORM_MINMAX);
 
-        for (int m=0; m<channels[i].size().width; m++)
+        int w = channels[i].size().width;
+        int h = channels[i].size().height;
+        for (int m=0; m < w; m++)
         {
-            for (int n=0; n<channels[i].size().height; n++)
+            for (int n=0; n < h; n++)
             {
                 int currentGridSize = getGridSize(distances[i].at<float>(Point(m, n)));
                 if (currentGridSize > 1)
                 {
                     int regionSum;
                     int step = currentGridSize/2;
-                    int cornerX = m - step;
-                    int cornerY = n - step;
+                    int cornerX = n - step;
+                    int cornerY = m - step;
                     if (cornerX < 0) cornerX = 0;
-                    if (cornerX > channels[i].size().width - currentGridSize) cornerX = channels[i].size().width - currentGridSize;
+                    if (cornerX > h - currentGridSize + 1) cornerX = h - currentGridSize;
                     if (cornerY < 0) cornerY = 0;
-                    if (cornerY > channels[i].size().height - currentGridSize) cornerY = channels[i].size().height - currentGridSize;
+                    if (cornerY > w - currentGridSize + 1) cornerY = w - currentGridSize;
+                    currentGridSize--;
 
-                    int tl= integrals[i].at<int>((cornerY),(cornerX));
-                    int tr= integrals[i].at<int>((cornerY),(cornerX+currentGridSize));
-                    int bl= integrals[i].at<int>((cornerY+currentGridSize),(cornerX));
-                    int br= integrals[i].at<int>((cornerY+currentGridSize),(cornerX+currentGridSize));
+                    int tl= integrals[i].at<int>((cornerX),(cornerY));
+                    int tr= integrals[i].at<int>((cornerX+currentGridSize),(cornerY));
+                    int bl= integrals[i].at<int>((cornerX),(cornerY+currentGridSize));
+                    int br= integrals[i].at<int>((cornerX+currentGridSize),(cornerY+currentGridSize));
 
                     regionSum = (tl+br-bl-tr)/(currentGridSize*currentGridSize);
                     blures[i].at<uchar>(Point(m,n)) = (uchar)regionSum;
